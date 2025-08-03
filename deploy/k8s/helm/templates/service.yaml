@@ -7,16 +7,16 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 8848
-      targetPort: 8848
+    - port: {{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}
+      targetPort: {{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}
       protocol: TCP
       name: http
-    - port: 9848
-      targetPort: 9848
+    - port: {{ .Values.extraEnv.RNACOS_GRPC_PORT | default 9848 }}
+      targetPort: {{ .Values.extraEnv.RNACOS_GRPC_PORT | default 9848 }}
       protocol: TCP
       name: grpc
-    - port: 10848
-      targetPort: 10848
+    - port: {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
+      targetPort: {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
       protocol: TCP
       name: admin
   selector:
@@ -32,16 +32,16 @@ metadata:
 spec:
   clusterIP: None
   ports:
-    - port: 8848
-      targetPort: 8848
+    - port: {{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}
+      targetPort: {{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}
       protocol: TCP
       name: http
-    - port: 9848
-      targetPort: 9848
+    - port: {{ .Values.extraEnv.RNACOS_GRPC_PORT | default 9848 }}
+      targetPort: {{ .Values.extraEnv.RNACOS_GRPC_PORT | default 9848 }}
       protocol: TCP
       name: grpc
-    - port: 10848
-      targetPort: 10848
+    - port: {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
+      targetPort: {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
       protocol: TCP
       name: admin
   selector:

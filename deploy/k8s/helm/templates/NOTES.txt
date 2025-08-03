@@ -13,10 +13,44 @@
      NOTE: It may take a few minutes for the LoadBalancer IP to be available.
            You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "rnacos.fullname" . }}'
   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "rnacos.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.service.port }}
+  echo http://$SERVICE_IP:{{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
 {{- else if contains "ClusterIP" .Values.service.type }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "rnacos.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-  echo "Visit http://127.0.0.1:10848 to use your application"
-  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 10848:$CONTAINER_PORT
+  
+  # R-Nacos Console (Management UI)
+  echo "Visit http://127.0.0.1:{{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }} for R-Nacos Console"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}:{{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
+  
+  # R-Nacos HTTP API (Client Access)
+  echo "For client access, use port-forward:"
+  echo "kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME {{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}:{{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}"
 {{- end }}
+
+2. R-Nacos Service Information:
+   - Console UI: Port {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }} (Management Interface)
+   - HTTP API: Port {{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }} (Client Access)
+   - gRPC API: Port {{ .Values.extraEnv.RNACOS_GRPC_PORT | default 9848 }} (Client Access)
+
+3. Default Login Credentials (if no authentication is configured):
+   - Username: {{ .Values.extraEnv.RNACOS_INIT_ADMIN_USERNAME | default "admin" }}
+   - Password: {{ .Values.extraEnv.RNACOS_INIT_ADMIN_PASSWORD | default "admin" }}
+   - Note: Please change default credentials in production!
+
+4. Health Check:
+   - Endpoint: http://localhost:{{ .Values.extraEnv.RNACOS_HTTP_PORT | default 8848 }}/health
+   - Access via port-forward: kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "rnacos.fullname" . }} {{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}:{{ .Values.extraEnv.RNACOS_HTTP_CONSOLE_PORT | default 10848 }}
+
+5. Cluster Information:
+   - Deployed with {{ .Values.replicaCount }} replicas
+   - Pods: {{ include "rnacos.fullname" . }}-0 to {{ include "rnacos.fullname" . }}-{{ sub .Values.replicaCount 1 }}
+   - Check cluster status: kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "rnacos.name" . }}
+
+6. Useful Commands:
+   # View logs
+   kubectl logs --namespace {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "rnacos.name" . }} -f
+   
+   # Access specific pod
+   kubectl exec --namespace {{ .Release.Namespace }} -it {{ include "rnacos.fullname" . }}-0 -- /bin/sh
+   
+   # Check service endpoints
+   kubectl get endpoints --namespace {{ .Release.Namespace }} {{ include "rnacos.fullname" . }}

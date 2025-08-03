@@ -14,14 +14,42 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-rnacosConfig:
+# DEPRECATED: rancosConfig is deprecated, please use env instead
+# 已废弃：rancosConfig 已废弃，请使用 env 配置
+rancosConfig:
   rustLog: info
   httpWorkers: 8
   consoleLoginOneHourLimit: 5
 
-# more configs from environment variables
-# https://r-nacos.github.io/docs/notes/env_config/#%E8%BF%90%E8%A1%8C%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E
+# DEPRECATED: extraEnvVars is deprecated, please use env instead
+# 已废弃：extraEnvVars 已废弃，请使用 extraEnv 配置
 extraEnvVars: []
+
+
+# 额外的环境变量配置
+# more configs from environment variables
+# https://r-nacos.github.io/docs/env_config/
+extraEnv:
+  # 推荐的配置方式 (Recommended configuration)
+  RNACOS_HTTP_PORT: 8848
+  RNACOS_GRPC_PORT: 9848
+  RNACOS_HTTP_CONSOLE_PORT: 10848
+  RUST_LOG: "info"                              # 替代 rancosConfig.rustLog
+  RNACOS_HTTP_WORKERS: 8                        # 替代 rancosConfig.httpWorkers  
+  RNACOS_CONSOLE_LOGIN_ONE_HOUR_LIMIT: 5        # 替代 rancosConfig.consoleLoginOneHourLimit
+  # 其他示例环境变量 (Other example environment variables)
+  # RNACOS_DATA_DIR: "/nacos/"
+  # RNACOS_ENABLE_NO_AUTH_CONSOLE: "false"
+  # RNACOS_BACKUP_TOKEN: ""
+  # RNACOS_INIT_ADMIN_USERNAME: "admin"
+  # RNACOS_INIT_ADMIN_PASSWORD: "admin"
+
+# 从 ConfigMap 或 Secret 引用的环境变量
+envFrom: []
+  # - configMapRef:
+  #     name: rnacos-config
+  # - secretRef:
+  #     name: rnacos-secret
 
 persistence:
   size: 20Gi
